@@ -173,3 +173,134 @@ El uso de RNAmining permitió:
 3. **Visualización Clara**: Facilitar la interpretación de los resultados mediante gráficos y tablas intuitivas.
 
 Este análisis es crucial para comprender los mecanismos biológicos subyacentes y para avanzar en la investigación genómica y transcriptómica.
+
+## Visualización de lncRNAs con R
+
+Después de obtener los lncRNAs de RNAmining, se utilizó el siguiente script en R para visualizar y analizar los datos:
+
+```r
+library(openxlsx)
+library(ggplot2)
+library(scales)
+library(viridisLite)
+library(viridis)
+
+setwd('D:/Documentos/doctorado/reconstruccion de transcritos/all_datasets/')
+
+lncRNAs = read.xlsx("lncRNAs_gffcompare.xlsx")
+
+# largo de los mono exonicos y multi exonicos
+ggplot(lncRNAs, aes(x = exon, y = len, fill = exon)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE) +
+  theme_classic(base_size = 14) +
+  theme(text = element_text(size = 20), # Ajustamos el tamaño del texto
+        legend.position = "none", # Eliminamos la leyenda
+        plot.title = element_text(hjust = 0.5)) + # Centramos el título
+  labs(title ="Tamaño de los lncRNAs", # Añadimos título
+       x ="Categorías", # Nombre del eje X
+       y ="Tamaño (nt)") # Nombre del eje Y
+
+# Gffcompare clasificacion
+
+ggplot(lncRNAs, aes(x = classification, y = len, fill = classification)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE) +
+  theme_classic(base_size = 14) +
+  theme(text = element_text(size = 20), # Ajustamos el tamaño del texto
+        legend.position = "none", # Eliminamos la leyenda
+        plot.title = element_text(hjust = 0.5)) + # Centramos el título
+  labs(title ="Tamaño de los lncRNAs descubiertos", # Añadimos título
+       x ="Categorías", # Nombre del eje X
+       y ="Tamaño (nt)") # Nombre del eje Y
+
+# gffcompare classes 
+
+library(dplyr)
+
+summary_data <- lncRNAs %>%
+  group_by(classification) %>%
+  summarise(tx_name_count = n_distinct(qry_id))
+
+ggplot(data = summary_data, aes(x = classification, y = tx_name_count, fill = classification)) +
+  geom_bar(stat = "identity",
+           position = position_dodge(width = 0.8),
+           width = 0.7) +
+  geom_text(aes(label = tx_name_count), vjust = 0.5, hjust = 0, color = "black",
+            position = position_dodge(0.9), size = 5) + # Ajustamos las etiquetas de texto
+  scale_fill_viridis(discrete = TRUE) +
+  labs(x = 'Tipos de transcritos no codificantes',
+       y = 'Número de transcritos',
+       fill = 'Tipos de Transcritos',
+       title = 'Distribución de Tipos de Transcritos No Codificantes Anotados') +
+  theme_classic(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.title = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 14),
+        plot.caption = element_text(hjust = 0.5, size = 8, face = "italic")) +
+  scale_y_continuous(limits = c(0, 2000),
+                     labels = number_format(accuracy = 1)) +
+  coord_flip() +
+  guides(fill = guide_legend(reverse = TRUE))
+
+# Combinacion de datas Mono y Multi y las clases
+
+summary_data = lncRNAs %>%
+  group_by(classification, exon) %>%
+  summarise(tx_name_count = n_distinct(qry_id), .groups = "drop")
+
+summary_data$interaction = with(summary_data, paste(classification, exon, sep = " "))
+
+ggplot(data = summary_data, aes(x = interaction, y = tx_name_count, fill = interaction)) +
+  geom_bar(stat = "identity",
+           position = position_dodge(width = 0.8),
+           width = 0.7) +
+  geom_text(aes(label = tx_name_count), vjust = 0.5, hjust = 0, color = "black",
+            position = position_dodge(0.9), size = 5) + # Ajustamos las etiquetas de texto
+  scale_fill_viridis(discrete = TRUE) +
+  labs(x = 'Tipos de transcritos no codificantes',
+       y = 'Número de transcritos',
+       fill = 'Tipos de Transcritos',
+       title = 'Distribución de Tipos de Transcritos No Codificantes Anotados') +
+  theme_classic(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.title = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 14),
+        plot.caption = element_text(hjust = 0.5, size = 8, face = "italic")) +
+  scale_y_continuous(limits = c(0, 2000),
+                     labels = number_format(accuracy = 1)) +
+  coord_flip() +
+  guides(fill = guide_legend(reverse = TRUE))
+
+# grafico de barras
+
+ggplot(data = summary_data, aes(x = exon, y = tx_name_count, fill = classification)) +
+  geom_bar(stat = "identity",
+           position = position_dodge(width = 0.8),
+           width = 0.7) +
+  geom_text(aes(label = tx_name_count), vjust = 0.5, hjust = 0, color = "black",
+            position = position_dodge(0.9), size = 5) + # Ajustamos las etiquetas de texto
+  scale_fill_viridis(discrete = TRUE) +
+  labs(x = 'Tipos de transcritos no codificantes',
+       y = 'Número de transcritos',
+       fill = 'Tipos de Transcritos',
+       title = 'Distribución de Tipos de Transcritos No Codificantes descubiertos') +
+  theme_classic(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.title = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 14),
+        plot.caption = element_text(hjust = 0.5, size = 8, face = "italic")) +
+  scale_y_continuous(limits = c(0, 2000),
+                     labels = number_format(accuracy = 1)) +
+  coord_flip() +
+  guides(fill = guide_legend(reverse = TRUE))
+```
