@@ -103,13 +103,19 @@ Antes de utilizar RNAmining, se empleó un script personalizado para filtrar los
 El siguiente script en Python fue utilizado para filtrar los transcritos con los códigos de clasificación `=, u, i, x`:
 
 ```python
-###################################################################################
-#                                                                                 #
-#                             Allan Peñaloza                                      #
-#     un script para filtrar un archivo gtf anotado por Gffcompare                #
-# y separa los transcritos y sus exones por codigo de clasificacion de transcrito #
-#                                                                                 #
-###################################################################################
+######################################################################################
+#                                                                                    #
+#                        Script de Filtrado de Transcritos                           #
+#                                                                                    #
+# Este script filtra un archivo GTF anotado por gffcompare y separa los transcritos  #
+# y sus exones según el código de clasificación de transcrito.                       #
+#                                                                                    #
+# Autor: Allan Javier Peñaloza Otárola                                               #
+# Contacto: allan.penaloza@ug.uchile.cl                                              #
+# Fecha: 12/10/2024                                                                  #
+#                                                                                    #
+######################################################################################
+
 
 import argparse
 
